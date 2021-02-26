@@ -1,6 +1,3 @@
-import os
-
-
 def build_car_load(data):
     traffic_lights = {}
     lights_id = {}
@@ -17,7 +14,7 @@ def build_car_load(data):
     return traffic_lights
 
 
-def play(lights_stats, total_time, division_factor=1, sort_lights=True):
+def play(lights_stats, streets, total_time, division_factor=1, sort_lights=True):
     if isinstance(division_factor, int):
         division_factor = division_factor if division_factor <= total_time else 2
         division_factor = [division_factor] * len(lights_stats)
@@ -27,17 +24,26 @@ def play(lights_stats, total_time, division_factor=1, sort_lights=True):
     for i, (cross, lights) in enumerate(lights_stats.items()):
         lights = [(k, v) for k, v in lights.items()]
 
-        # print('-', cross, lights)
         if len(lights) == 1:
             out_tuple = (cross, [(lights[0][0], total_time)])
         else:
-            total_w = sum([l[1] for l in lights])
+            total_cross_load = sum([l[1] for l in lights])
+            total_street_length = sum(streets[l[0]]['length'] for l in lights)
+
             lights_times = []
-            for l in lights:
-                t = min(total_time, round((l[1] / total_w) * (total_time / division_factor[i])))
-                if t == 0:
-                    continue
-                lights_times.append((l[0], t))
+            for street_and_load in lights:
+                street_name = street_and_load[0]
+                street_length = streets[street_name]['length']
+                cars_load = street_and_load[1]
+
+                car_factor = round((cars_load / total_cross_load) * (total_time / division_factor[i]))
+                length_factor = round((street_length / total_street_length) * (total_time / division_factor[i]))
+                light_time = car_factor * length_factor
+                light_time = min(total_time, light_time)
+
+                if light_time != 0:
+                    lights_times.append((street_name, light_time))
+
             if sort_lights:
                 lights_times = sorted(lights_times, key=lambda tup: tup[1], reverse=True)
 

@@ -33,13 +33,16 @@ def _process_first_line(first_line):
 def _process_streets(street_lines):
     streets = dict()
     for line in street_lines:
+        line = line[:-1]
         split_line = line.split(' ')
         start = int(split_line[0])
         end = int(split_line[1])
         name = split_line[2]
+        length = int(split_line[3])
         streets[name] = {
             'start': start,
-            'end': end
+            'end': end,
+            'length': length
         }
     return streets
 
